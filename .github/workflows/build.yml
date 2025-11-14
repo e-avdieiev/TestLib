@@ -71,7 +71,7 @@ jobs:
         name: nugetPackage
         path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg
         
-    name: "Push to GitHub Packages"
+    - name: "Push to GitHub Packages"
       shell: pwsh
       run: |
         $package = Get-ChildItem -Path "${{ env.PACKAGE_OUTPUT_DIRECTORY }}" -Filter "*.nupkg" | Select-Object -First 1
