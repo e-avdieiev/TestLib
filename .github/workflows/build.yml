@@ -4,6 +4,11 @@ on:
   push:
     branches: '**' # Запуск при создании тега, напр. v1.0.0
 
+env:
+  PROJECT_PATH: 'PasswordBoxMVVM/PasswordBoxMVVM.csproj'
+  PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}\.artifacts
+  NUGET_SOURCE_URL: 'https://api.nuget.org/v3/index.json'
+
 jobs:
   build-package:
     # Используем Windows-агент
@@ -64,5 +69,5 @@ jobs:
     - name: "Upload Artifact"
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-package
-        path: .artifacts/*
+        name: nugetPackage
+        path: ${{env.PACKAGE_OUTPUT_DIRECTORY}}\*.nupkg
