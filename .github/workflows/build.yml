@@ -2,35 +2,29 @@ name: "UiPath: Сборка пакета (nupkg)"
 
 on:
   push:
-    branches: '**' # Запуск при создании тега, напр. v1.0.0
+    branches: '**'
 
 env:
-  PROJECT_PATH: 'PasswordBoxMVVM/PasswordBoxMVVM.csproj'
   PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}\.artifacts
-  NUGET_SOURCE_URL: 'https://api.nuget.org/v3/index.json'
 
 jobs:
   build-package:
     runs-on: windows-latest
     
     steps:
-    # 1. Загружаем исходный код из Git
     - name: "Checkout"
       uses: actions/checkout@v4
 
-    # 2. Устанавливаем .NET SDK
     - name: "Setup .NET"
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '6.0.x'
 
-    # 3. Устанавливаем UiPath CLI
     - name: "Setup UiPath (uipcli) command line tool"
       uses: Mikael-RnD/setup-uipath@v2
       with:
         platform-version: '24.10'
 
-    # 4. Собираем (пакуем) проект в NuGet пакет
     - name: "Pack Project"
       shell: pwsh
       run: |
@@ -38,18 +32,17 @@ jobs:
         $projectJsonPath = Join-Path $projectDir "project.json"
         $artifactsDir = Join-Path $projectDir ".artifacts"
         
-        # Читаем 'projectVersion' из явного пути
+        # Читаем 'projectVersion'
         $projectJson = Get-Content -Raw -Path $projectJsonPath | ConvertFrom-Json
         $baseVersion = $projectJson.projectVersion
         
-        # Создаем новую версию
-        $newVersion = "$baseVersion.22"
+        $newVersion = "$baseVersion"
         
         Write-Output "Project directory: $projectDir"
         Write-Output "Base version: $baseVersion"
         Write-Output "Packing with new version: $newVersion"
         
-        # Создаем папку артефактов
+        # Создаем папку
         if (-not (Test-Path $artifactsDir)) {
           mkdir $artifactsDir
         }
@@ -57,20 +50,13 @@ jobs:
         # Запускаем pack с явным путем к проекту и папке вывода
         uipcli package pack $projectDir --output $artifactsDir --version $newVersion
 
-    - name: "4.5. List files in workspace"
+    - name: "List files in workspace"
       shell: pwsh
       run: |
         # 'ls -R' — это команда PowerShell для рекурсивного 
         # отображения всех файлов и папок
         ls -R "${{ github.workspace }}"
 
-    # 5. Сохраняем собранный .nupkg как артефакт
-    - name: "Upload Artifact"
-      uses: actions/upload-artifact@v4
-      with:
-        name: nugetPackage
-        path: ${{ env.PACKAGE_OUTPUT_DIRECTORY }}/*.nupkg
-        
     - name: "Push to GitHub Packages"
       shell: pwsh
       run: |
@@ -78,5 +64,4 @@ jobs:
         
         Write-Output "Pushing package: $($package.FullName)"
         
-        # Публикуем в GitHub Packages, используя стандартный dotnet CLI
         dotnet nuget push $package.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key "${{ secrets.MY_GITHUB_TOKEN }}"
