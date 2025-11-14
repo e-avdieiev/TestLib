@@ -32,15 +32,28 @@ jobs:
     - name: "Pack Project"
       shell: pwsh
       run: |
-        $projectJson = Get-Content -Raw -Path ".\project.json" | ConvertFrom-Json
+        $projectDir = "${{ github.workspace }}"
+        $projectJsonPath = Join-Path $projectDir "project.json"
+        $artifactsDir = Join-Path $projectDir ".artifacts"
+        
+        # 4b. Читаем 'projectVersion' из явного пути
+        $projectJson = Get-Content -Raw -Path $projectJsonPath | ConvertFrom-Json
         $baseVersion = $projectJson.projectVersion
+        
+        # 4c. Создаем новую версию
         $newVersion = "$baseVersion.${{ github.run_number }}"
         
+        Write-Output "Project directory: $projectDir"
         Write-Output "Base version: $baseVersion"
         Write-Output "Packing with new version: $newVersion"
         
-        mkdir .\.artifacts
-        uipcli package pack . --output .\.artifacts --version $newVersion
+        # 4d. Создаем папку артефактов
+        if (-not (Test-Path $artifactsDir)) {
+          mkdir $artifactsDir
+        }
+        
+        # 4e. Запускаем pack с явным путем к проекту и папке вывода
+        uipcli package pack $projectDir --output $artifactsDir --version $newVersion
 
     # 5. Сохраняем собранный .nupkg как артефакт
     - name: "Upload Artifact"
