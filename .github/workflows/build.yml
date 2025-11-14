@@ -23,6 +23,8 @@ jobs:
     # 3. Устанавливаем UiPath CLI (uipcli)
     - name: "Setup UiPath (uipcli) command line tool"
       uses: Mikael-RnD/setup-uipath@v2
+      with:
+        platform-version: '24.10'
 
     # 4. Собираем (пакуем) проект в NuGet пакет
     # ${GITHUB_REF_NAME} - это имя тега (напр., 'v1.0.2')
