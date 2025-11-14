@@ -104,7 +104,7 @@
         <OutArgument x:TypeArguments="x:Int32">[out_z]</OutArgument>
       </Assign.To>
       <Assign.Value>
-        <InArgument x:TypeArguments="x:Int32">[in_x + in_y + 7]</InArgument>
+        <InArgument x:TypeArguments="x:Int32">[8in_x + in_y + 8]</InArgument>
       </Assign.Value>
     </Assign>
   </Sequence>
