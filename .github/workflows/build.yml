@@ -79,4 +79,4 @@ jobs:
         Write-Output "Pushing package: $($package.FullName)"
         
         # Публикуем в GitHub Packages, используя стандартный dotnet CLI
-        dotnet nuget push $package.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key "${{ secrets.GITHUB_TOKEN }}"
+        dotnet nuget push $package.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key "${{ secrets.MY_GITHUB_TOKEN }}"
