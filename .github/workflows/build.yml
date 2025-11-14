@@ -21,20 +21,28 @@ jobs:
         dotnet-version: '6.0.x' 
 
     # 3. Устанавливаем UiPath CLI (uipcli)
-    - name: "Install UiPath CLI (uipcli)"
-      run: dotnet tool install UiPath.Cli --global
+    - name: "Setup UiPath (uipcli) command line tool"
+      uses: Mikael-RnD/setup-uipath@v2
 
     # 4. Собираем (пакуем) проект в NuGet пакет
     # ${GITHUB_REF_NAME} - это имя тега (напр., 'v1.0.2')
     # ${GITHUB_REF_NAME#v} убирает 'v' из тега (v1.0.2 -> 1.0.2)
     - name: "Pack Project"
+      shell: pwsh
       run: |
-        mkdir .\.artifacts # Создаем папку для артефактов
-        uipcli package pack . --output .\.artifacts --version ${GITHUB_REF_NAME#v}
+        $projectJson = Get-Content -Raw -Path ".\project.json" | ConvertFrom-Json
+        $baseVersion = $projectJson.projectVersion
+        $newVersion = "$baseVersion.${{ github.run_number }}"
+        
+        Write-Output "Base version: $baseVersion"
+        Write-Output "Packing with new version: $newVersion"
+        
+        mkdir .\.artifacts
+        uipcli package pack . --output .\.artifacts --version $newVersion
 
     # 5. Сохраняем собранный .nupkg как артефакт
     - name: "Upload Artifact"
       uses: actions/upload-artifact@v4
       with:
-        name: nuget-package # Название артефакта
-        path: .\.artifacts\*.nupkg # Путь к файлу для загрузки
+        name: nuget-package
+        path: .\.artifacts\*.nupkg
