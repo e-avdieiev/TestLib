@@ -7,28 +7,26 @@ on:
 jobs:
   build-package:
     # Используем Windows-агент
-    runs-on: windows-latest 
+    runs-on: windows-latest
     
     steps:
     # 1. Загружаем исходный код из Git
     - name: "Checkout"
       uses: actions/checkout@v4
 
-    # 2. Устанавливаем .NET SDK (необходим для uipcli)
+    # 2. Устанавливаем .NET SDK
     - name: "Setup .NET"
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '6.0.x' 
+        dotnet-version: '6.0.x'
 
-    # 3. Устанавливаем UiPath CLI (uipcli)
+    # 3. Устанавливаем UiPath CLI
     - name: "Setup UiPath (uipcli) command line tool"
       uses: Mikael-RnD/setup-uipath@v2
       with:
         platform-version: '24.10'
 
     # 4. Собираем (пакуем) проект в NuGet пакет
-    # ${GITHUB_REF_NAME} - это имя тега (напр., 'v1.0.2')
-    # ${GITHUB_REF_NAME#v} убирает 'v' из тега (v1.0.2 -> 1.0.2)
     - name: "Pack Project"
       shell: pwsh
       run: |
@@ -36,24 +34,31 @@ jobs:
         $projectJsonPath = Join-Path $projectDir "project.json"
         $artifactsDir = Join-Path $projectDir ".artifacts"
         
-        # 4b. Читаем 'projectVersion' из явного пути
+        # Читаем 'projectVersion' из явного пути
         $projectJson = Get-Content -Raw -Path $projectJsonPath | ConvertFrom-Json
         $baseVersion = $projectJson.projectVersion
         
-        # 4c. Создаем новую версию
+        # Создаем новую версию
         $newVersion = "$baseVersion.${{ github.run_number }}"
         
         Write-Output "Project directory: $projectDir"
         Write-Output "Base version: $baseVersion"
         Write-Output "Packing with new version: $newVersion"
         
-        # 4d. Создаем папку артефактов
+        # Создаем папку артефактов
         if (-not (Test-Path $artifactsDir)) {
           mkdir $artifactsDir
         }
         
-        # 4e. Запускаем pack с явным путем к проекту и папке вывода
+        # Запускаем pack с явным путем к проекту и папке вывода
         uipcli package pack $projectDir --output $artifactsDir --version $newVersion
+
+    - name: "4.5. List files in workspace"
+      shell: pwsh
+      run: |
+        # 'ls -R' — это команда PowerShell для рекурсивного 
+        # отображения всех файлов и папок
+        ls -R "${{ github.workspace }}"
 
     # 5. Сохраняем собранный .nupkg как артефакт
     - name: "Upload Artifact"
