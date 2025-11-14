@@ -43,7 +43,7 @@ jobs:
         $baseVersion = $projectJson.projectVersion
         
         # Создаем новую версию
-        $newVersion = "$baseVersion.${{ github.run_number }}"
+        $newVersion = "$baseVersion.22"
         
         Write-Output "Project directory: $projectDir"
         Write-Output "Base version: $baseVersion"
