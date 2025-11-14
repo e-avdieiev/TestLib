@@ -1,0 +1,6 @@
+{
+  "Name": "TestLib",
+  "ProjectType": "Process",
+  "Description": "Test CI/CD Lib",
+  "MainFile": "Add.xaml"
+}
