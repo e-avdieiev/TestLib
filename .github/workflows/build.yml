@@ -11,7 +11,6 @@ env:
 
 jobs:
   build-package:
-    # Используем Windows-агент
     runs-on: windows-latest
     
     steps:
@@ -44,7 +43,7 @@ jobs:
         $baseVersion = $projectJson.projectVersion
         
         # Создаем новую версию
-        $newVersion = "$baseVersion" # ${{ github.run_number }}
+        $newVersion = "$baseVersion.${{ github.run_number }}"
         
         Write-Output "Project directory: $projectDir"
         Write-Output "Base version: $baseVersion"
