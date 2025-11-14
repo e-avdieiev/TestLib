@@ -1,0 +1,41 @@
+name: "UiPath: Сборка пакета (nupkg)"
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+' # Запуск при создании тега, напр. v1.0.0
+
+jobs:
+  build-package:
+    # Используем Windows-агент
+    runs-on: windows-latest 
+    
+    steps:
+    # 1. Загружаем исходный код из Git
+    - name: "Checkout"
+      uses: actions/checkout@v4
+
+    # 2. Устанавливаем .NET SDK (необходим для uipcli)
+    - name: "Setup .NET"
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x' 
+
+    # 3. Устанавливаем UiPath CLI (uipcli)
+    - name: "Install UiPath CLI (uipcli)"
+      run: dotnet tool install UiPath.Cli --global
+
+    # 4. Собираем (пакуем) проект в NuGet пакет
+    # ${GITHUB_REF_NAME} - это имя тега (напр., 'v1.0.2')
+    # ${GITHUB_REF_NAME#v} убирает 'v' из тега (v1.0.2 -> 1.0.2)
+    - name: "Pack Project"
+      run: |
+        mkdir .\.artifacts # Создаем папку для артефактов
+        uipcli package pack . --output .\.artifacts --version ${GITHUB_REF_NAME#v}
+
+    # 5. Сохраняем собранный .nupkg как артефакт
+    - name: "Upload Artifact"
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-package # Название артефакта
+        path: .\.artifacts\*.nupkg # Путь к файлу для загрузки
